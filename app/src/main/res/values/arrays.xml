@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="sorting_option_labels">
+        <item>@string/sorting_label_popular</item>
+        <item>@string/sorting_label_rated</item>
+        <item>@string/sorting_label_favorites</item>
+    </array>
+
+    <array name="sorting_option_values">
+        <item>@string/sorting_popular_value</item>
+        <item>@string/sorting_rated_value</item>
+        <item>@string/sorting_favorites_value</item>
+    </array>
+
+    <array name="locale_option_labels">
+        <item>@string/locale_label_enUS</item>
+        <item>@string/locale_label_enGB</item>
+        <item>@string/locale_label_itIT</item>
+        <item>@string/locale_label_esES</item>
+        <item>@string/locale_label_frFR</item>
+        <item>@string/locale_label_deDE</item>
+    </array>
+
+    <array name="locale_option_values">
+        <item>@string/locale_enUS_value</item>
+        <item>@string/locale_enGB_value</item>
+        <item>@string/locale_itIT_value</item>
+        <item>@string/locale_esES_value</item>
+        <item>@string/locale_frFR_value</item>
+        <item>@string/locale_deDE_value</item>
+    </array>
+</resources>

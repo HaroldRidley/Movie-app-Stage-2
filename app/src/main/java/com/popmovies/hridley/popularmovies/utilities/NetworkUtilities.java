@@ -15,7 +15,7 @@ import java.util.Scanner;
 
 public final class NetworkUtilities {
 
-    private static final String API_KEY = "<your-api-key-here>";
+    private static final String API_KEY = "<Your API Key HERE>";
 
 
     private static final String API_KEY_QUERY_PARAM = "api_key";
@@ -24,6 +24,8 @@ public final class NetworkUtilities {
     private static final String PAGE_QUERY_PARAM = "page";
     private static final String LANGUAGE_QUERY_PARAM = "language";
     private static final String API_URL = "https://api.themoviedb.org/3";
+    private static final String METHOD_VIDEOS = "/movie/#/videos";
+    private static final String METHOD_REVIEWS = "/movie/#/reviews";
 
 
     public static boolean hasConnection(Context context) {
@@ -67,21 +69,60 @@ public final class NetworkUtilities {
             urlConnection.disconnect();
         }
     }
+    
+    
 
+    /**
+     * Getter method to get the Language query param value
+     *
+     * @return the Language query param value
+     */
+    public static String getLanguage() { return LANGUAGE_QUERY_PARAM; }
 
-    public static String getLanguage() {
-        return LANGUAGE_QUERY_PARAM;
-    }
-
+    /**
+     * Getter method to get the Page query param value
+     *
+     * @return the Page param value
+     */
     public static String getPage() {
         return PAGE_QUERY_PARAM;
     }
 
-    public static String getMethodPopular() {
+    /**
+     * Getter method to get the Most Popular query param value
+     *
+     * @return the Most Popular param value
+     */
+    public static String getPopular() {
         return METHOD_POPULAR;
     }
 
-    public static String getMethodRated() {
+    /**
+     * Getter method to get the Rated query param value
+     *
+     * @return the Rated param value
+     */
+    public static String getTopRated() {
         return METHOD_RATED;
+    }
+
+    /**
+     * Getter method to get the Videos query param value
+     *
+     * @param movieId the id of the movie.
+     * @return the Videos param value
+     */
+    public static String getVideos(int movieId) {
+        return METHOD_VIDEOS.replace("#", String.valueOf(movieId));
+    }
+
+    /**
+     * Getter method to get the Reviews query param value
+     *
+     * @param movieId the id of the movie.
+     * @return the Reviews param value
+     */
+    public static String getReviews(int movieId) {
+        return METHOD_REVIEWS.replace("#", String.valueOf(movieId));
     }
 }

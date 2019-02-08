@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.popmovies.hridley.popularmovies">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -9,23 +10,39 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        android:theme="@style/AppTheme"
+        tools:replace="android:appComponentFactory"
+        android:appComponentFactory="@string/action_settings">
+        <activity
+            android:name=".MovieGridActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
-            android:name=".MovieDetailActivity"
-            android:parentActivityName=".MainActivity">
+            android:name=".SettingsActivity"
+            android:label="@string/action_settings"
+            android:parentActivityName=".MovieGridActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
+                android:value=".MovieGridActivity" />
         </activity>
-    </application>
 
+        <activity
+            android:name=".MovieDetailActivity"
+            android:parentActivityName=".MovieGridActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MovieGridActivity" />
+        </activity>
+
+        <provider
+            android:name="com.popmovies.hridley.popularmovies.db.MovieContentProvider"
+            android:authorities="com.popmovies.hridley.popularmovies"
+            android:exported="false"/>
+
+    </application>
 </manifest>

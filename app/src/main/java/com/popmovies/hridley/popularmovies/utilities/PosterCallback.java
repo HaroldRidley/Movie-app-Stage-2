@@ -2,7 +2,7 @@ package com.popmovies.hridley.popularmovies.utilities;
 
 import android.view.View;
 
-import com.popmovies.hridley.popularmovies.MoviesAdapter;
+import com.popmovies.hridley.popularmovies.adapters.MoviesAdapter;
 import com.squareup.picasso.Callback;
 
 public class PosterCallback extends Callback.EmptyCallback {
