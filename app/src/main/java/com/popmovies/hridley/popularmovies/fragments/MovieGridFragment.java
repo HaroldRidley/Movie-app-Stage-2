@@ -1,7 +1,6 @@
 package com.popmovies.hridley.popularmovies.fragments;
 
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -23,9 +22,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.popmovies.hridley.popularmovies.R;
 import com.popmovies.hridley.popularmovies.adapters.MoviesAdapter;
+import com.popmovies.hridley.popularmovies.db.AppDatabase;
+import com.popmovies.hridley.popularmovies.executors.AppExecutors;
 import com.popmovies.hridley.popularmovies.models.Movie;
 import com.popmovies.hridley.popularmovies.utilities.NetworkUtilities;
 import com.popmovies.hridley.popularmovies.utilities.RecyclerViewScrollListener;
@@ -79,8 +81,11 @@ public class MovieGridFragment extends Fragment implements
     private int mSorting;
     private static String mMovieLocale;
     private int mPosition = RecyclerView.NO_POSITION;
+    private List<Movie> favMovieList;
 
     private static MoviesAdapter mMoviesAdapter;
+
+    private AppDatabase mDb;
 
     private static final int SORTING_POPULAR = 1;
     private static final int SORTING_RATED = 2;
@@ -113,6 +118,7 @@ public class MovieGridFragment extends Fragment implements
         View rootView = inflater.inflate(R.layout.movie_grid, container, false);
         ButterKnife.bind(this, rootView);
         mContext = getContext();
+        mDb = AppDatabase.getInstance(mContext);
         setupSharedPreferences();
 
         if (null != savedInstanceState && !errorShown) {
@@ -195,7 +201,8 @@ public class MovieGridFragment extends Fragment implements
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {}
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    }
 
     /**
      * A method that invokes the AsyncTask to populate the RecyclerView,
@@ -224,17 +231,56 @@ public class MovieGridFragment extends Fragment implements
                     );
                     break;
                 case SORTING_FAVORITES:
-                    LoaderManager loaderManager = getActivity().getSupportLoaderManager();
-                    if (null == loaderManager.getLoader(ID_FAVORITES_LOADER)) {
-                        loaderManager.initLoader(ID_FAVORITES_LOADER, null, this);
-                    } else {
-                        loaderManager.restartLoader(ID_FAVORITES_LOADER, null, this);
-                    }
+
+                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                List<Movie> movieList = mDb.movieDAO().loadAllMovies();
+                                //logic from load fav movies
+                                mLoadingIndicator.setVisibility(View.INVISIBLE);
+                                if (null != movieList) {
+                                    mMoviesAdapter.setMoviesData(movieList);
+                                    mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+                                } else {
+                                    showErrorMessage(R.string.error_moviedb_list, mContext);
+                                }
+                                mSwipeContainer.setRefreshing(false);
+                                // end logic
+                            } catch (NullPointerException e) {
+                                Toast.makeText(getActivity().getBaseContext(), "No Favorites", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+//                    try {
+//                        movieList = mDb.movieDAO().loadAllMovies();
+//
+//                    } catch (NullPointerException e) {
+//                        Toast.makeText(getActivity().getBaseContext(), "No Favorites", Toast.LENGTH_LONG).show();
+//                    }
+//                    this.loadFavoritesFromDb(movieList);
+//                    LoaderManager loaderManager = getActivity().getSupportLoaderManager();
+//                    if (null == loaderManager.getLoader(ID_FAVORITES_LOADER)) {
+//                        loaderManager.initLoader(ID_FAVORITES_LOADER, null, this);
+//                    } else {
+//                        loaderManager.restartLoader(ID_FAVORITES_LOADER, null, this);
+//                    }
                     break;
             }
         } else {
             showErrorMessage(R.string.error_no_connectivity, mContext);
         }
+    }
+
+    public void loadFavoritesFromDb(List<Movie> movieList) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (null != movieList) {
+            mMoviesAdapter.setMoviesData(movieList);
+            mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        } else {
+            showErrorMessage(R.string.error_moviedb_list, mContext);
+        }
+        mSwipeContainer.setRefreshing(false);
     }
 
     @Override

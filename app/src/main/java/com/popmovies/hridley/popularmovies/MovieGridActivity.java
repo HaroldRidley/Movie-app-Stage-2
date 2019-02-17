@@ -11,6 +11,7 @@ import android.view.MenuItem;
 
 import com.popmovies.hridley.popularmovies.R;
 import com.popmovies.hridley.popularmovies.SettingsActivity;
+import com.popmovies.hridley.popularmovies.db.AppDatabase;
 
 /**
  * The entry point Activity of the Application

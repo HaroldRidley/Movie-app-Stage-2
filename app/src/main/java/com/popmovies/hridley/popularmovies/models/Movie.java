@@ -1,7 +1,8 @@
 package com.popmovies.hridley.popularmovies.models;
 
-
-
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -11,7 +12,9 @@ import com.popmovies.hridley.popularmovies.R;
 /**
  * Object representing a Movie, an item from the MovieDB API
  */
+@Entity
 public class Movie implements Parcelable {
+    @PrimaryKey
     private int id;
     private String backdropPath;
     private String posterPath;
@@ -49,6 +52,7 @@ public class Movie implements Parcelable {
      *
      * @param parcel the object containing the movie data of the object we need to create
      */
+    @Ignore
     private Movie(Parcel parcel) {
         id = parcel.readInt();
         backdropPath = parcel.readString();
@@ -65,6 +69,7 @@ public class Movie implements Parcelable {
      * @param context application context
      * @return the path used by the Picasso library to display an image
      */
+    @Ignore
     public String buildBackdropPath(Context context) {
         String backdropWidth = context.getResources().getString(R.string.backdrop_size);
         return MOVIEDB_POSTER_IMG_URL + backdropWidth + getBackdropPath();
@@ -76,17 +81,20 @@ public class Movie implements Parcelable {
      * @param context application context
      * @return the path used by the Picasso library to display an image
      */
+    @Ignore
     public String buildPosterPath(Context context) {
         String posterWidth = context.getResources().getString(R.string.poster_size);
         return MOVIEDB_POSTER_IMG_URL + posterWidth + getPosterPath();
     }
 
     @Override
+    @Ignore
     public int describeContents() {
         return 0;
     }
 
     @Override
+    @Ignore
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeInt(id);
         parcel.writeString(backdropPath);
@@ -97,6 +105,7 @@ public class Movie implements Parcelable {
         parcel.writeString(voteAverage);
     }
 
+    @Ignore
     public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
         @Override
         public Movie createFromParcel(Parcel parcel) {

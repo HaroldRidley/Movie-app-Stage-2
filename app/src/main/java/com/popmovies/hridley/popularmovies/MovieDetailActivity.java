@@ -7,12 +7,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.popmovies.hridley.popularmovies.R;
+import com.popmovies.hridley.popularmovies.db.AppDatabase;
 import com.popmovies.hridley.popularmovies.fragments.MovieDetailFragment;
 
 /**
  * Activity used to display Movie details, like release date, vote average, etc..
  */
 public class MovieDetailActivity extends AppCompatActivity {
+
+    private AppDatabase mDb;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,8 @@ public class MovieDetailActivity extends AppCompatActivity {
                     .add(R.id.movie_detail_container, fragment)
                     .commit();
         }
+
+        mDb = AppDatabase.getInstance(getApplicationContext());
     }
 
     @Override
