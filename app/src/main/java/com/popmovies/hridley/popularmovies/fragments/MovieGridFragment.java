@@ -3,15 +3,11 @@ package com.popmovies.hridley.popularmovies.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
@@ -50,7 +46,6 @@ import butterknife.ButterKnife;
  * A Class that extends Fragment to implement the Movie List structure
  */
 public class MovieGridFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     private Context mContext;
@@ -252,19 +247,6 @@ public class MovieGridFragment extends Fragment implements
                             }
                         }
                     });
-//                    try {
-//                        movieList = mDb.movieDAO().loadAllMovies();
-//
-//                    } catch (NullPointerException e) {
-//                        Toast.makeText(getActivity().getBaseContext(), "No Favorites", Toast.LENGTH_LONG).show();
-//                    }
-//                    this.loadFavoritesFromDb(movieList);
-//                    LoaderManager loaderManager = getActivity().getSupportLoaderManager();
-//                    if (null == loaderManager.getLoader(ID_FAVORITES_LOADER)) {
-//                        loaderManager.initLoader(ID_FAVORITES_LOADER, null, this);
-//                    } else {
-//                        loaderManager.restartLoader(ID_FAVORITES_LOADER, null, this);
-//                    }
                     break;
             }
         } else {
@@ -281,38 +263,6 @@ public class MovieGridFragment extends Fragment implements
             showErrorMessage(R.string.error_moviedb_list, mContext);
         }
         mSwipeContainer.setRefreshing(false);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        switch (id) {
-            case ID_FAVORITES_LOADER:
-                Uri favoriteMoviesUri = FavoriteMovieEntry.CONTENT_URI;
-                return new CursorLoader(mContext,
-                        favoriteMoviesUri,
-                        FAVORITE_MOVIES_PROJECTION,
-                        null,
-                        null,
-                        null);
-            default:
-                throw new RuntimeException("Loader Not Implemented: " + id);
-        }
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (null != data && data.getCount() != 0) {
-            mMoviesAdapter.loadCursorIntoAdapter(data);
-            if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
-            mRecyclerView.smoothScrollToPosition(mPosition);
-        } else {
-            showErrorMessage(R.string.error_no_favorites, mContext);
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mMoviesAdapter.loadCursorIntoAdapter(null);
     }
 
     /**

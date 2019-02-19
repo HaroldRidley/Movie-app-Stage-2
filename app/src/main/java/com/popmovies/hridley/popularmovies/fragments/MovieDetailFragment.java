@@ -1,13 +1,14 @@
 package com.popmovies.hridley.popularmovies.fragments;
 
 
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -112,9 +113,27 @@ public class MovieDetailFragment extends Fragment {
             ButterKnife.bind(this, rootView);
             getActivity().setTitle(mMovie.getOriginalTitle());
 
-            if (checkFavorite(mMovie.getId())) {
-                mMovieFavoriteImageView.setBackgroundResource(R.drawable.ic_favorite_border_red_24dp);
-            }
+
+            AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                @Override
+                public void run() {
+                   final Movie currentMovie = mDb.movieDAO().loadMovieById(mMovie.getId());
+
+                    Handler handler = new Handler(Looper.getMainLooper());
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(null!= currentMovie){
+                                MovieDetailFragment.showFavorite(mMovieFavoriteImageView, true);
+                            }else{
+                                MovieDetailFragment.showFavorite(mMovieFavoriteImageView, false);
+                            }
+                        }
+                    });
+
+                }
+            });
 
             Picasso.with(mContext)
                     .load(mMovie.buildBackdropPath(mContext))
@@ -210,25 +229,15 @@ public class MovieDetailFragment extends Fragment {
     }
 
     /**
-     * A method to check if a Movie is already or not flagged as favorite
-     *
-     * @param movieId the ID of the movie, from The MovieDB database
-     * @return true or false
+     * A mehtod to modify favorite icon
      */
-    private boolean checkFavorite(int movieId) {
-        boolean favorite = false;
-        String[] selectionArgs = {String.valueOf(movieId)};
-        Uri uri = MovieContract.FavoriteMovieEntry.buildFavoriteUriWithMovieId(movieId);
-        Cursor cursor = getActivity().getContentResolver().query(uri,
-                null,
-                MovieContract.FavoriteMovieEntry.MOVIE_ID + "=?",
-                selectionArgs,
-                null);
-        if (null != cursor && cursor.getCount() != 0) {
-            favorite = true;
-            cursor.close();
+    private static void showFavorite(ImageView movieImageView, Boolean isFav){
+        if (isFav){
+            movieImageView.setBackgroundResource(R.drawable.ic_favorite_red_24dp);
+
+        }else{
+            movieImageView.setBackgroundResource(R.drawable.ic_favorite_border_red_24dp);
         }
-        return favorite;
     }
 
     /**
@@ -237,45 +246,35 @@ public class MovieDetailFragment extends Fragment {
     @OnClick(R.id.iv_movie_favorite)
     public void favoriteMovie() {
 
-            //if currently favorite, we delete it
-            AppExecutors.getInstance().diskIO().execute(new Runnable() {
-                @Override
-                public void run() {
-                    Movie movie = mDb.movieDAO().loadMovieById(mMovie.getId());
-                    if(null != movie){
+        //if currently favorite, we delete it
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Handler handler = new Handler(Looper.getMainLooper());
+                Movie movie = mDb.movieDAO().loadMovieById(mMovie.getId());
+                if (null != movie) {
                     mDb.movieDAO().deleteMovie(movie);
-                        Toast.makeText(getActivity().getBaseContext(), mFavOffToastMsg, Toast.LENGTH_LONG).show();
-                        mMovieFavoriteImageView.setBackgroundResource(R.drawable.ic_favorite_border_red_24dp);
-                    }else{
-                        mDb.movieDAO().insertMovie(mMovie);
-                        Toast.makeText(getActivity().getBaseContext(), mFavOnToastMsg, Toast.LENGTH_LONG).show();
-                        mMovieFavoriteImageView.setBackgroundResource(R.drawable.ic_favorite_red_24dp);
-                    }
-                }
-            });
 
-        //TODO utilizing content provider. need to remove
-//        if (checkFavorite(mMovie.getId())) {
-//            Uri removeFavoriteUri = MovieContract.FavoriteMovieEntry.buildFavoriteUriWithMovieId(mMovie.getId());
-//            getActivity().getContentResolver().delete(removeFavoriteUri, null, null);
-//            Toast.makeText(getActivity().getBaseContext(), mFavOffToastMsg, Toast.LENGTH_LONG).show();
-//            mMovieFavoriteImageView.setBackgroundResource(R.drawable.ic_favorite_border_red_24dp);
-//        } else {
-//            ContentValues contentValues = new ContentValues();
-//            contentValues.put(MovieContract.FavoriteMovieEntry.MOVIE_ID, mMovie.getId());
-//            contentValues.put(MovieContract.FavoriteMovieEntry.BACKDROP_PATH, mMovie.getBackdropPath());
-//            contentValues.put(MovieContract.FavoriteMovieEntry.POSTER_PATH, mMovie.getPosterPath());
-//            contentValues.put(MovieContract.FavoriteMovieEntry.OVERVIEW, mMovie.getOverview());
-//            contentValues.put(MovieContract.FavoriteMovieEntry.TITLE, mMovie.getOriginalTitle());
-//            contentValues.put(MovieContract.FavoriteMovieEntry.RELEASE_DATE, mMovie.getReleaseDate());
-//            contentValues.put(MovieContract.FavoriteMovieEntry.VOTE_AVERAGE, mMovie.getVoteAverage());
-//            Uri favoriteUri = getActivity().getContentResolver().insert(MovieContract.FavoriteMovieEntry.CONTENT_URI, contentValues);
-//
-//            if (null != favoriteUri) {
-//                Toast.makeText(getActivity().getBaseContext(), mFavOnToastMsg, Toast.LENGTH_LONG).show();
-//                mMovieFavoriteImageView.setBackgroundResource(R.drawable.ic_favorite_red_24dp);
-//            }
-//        }
+                    handler.post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(getActivity().getBaseContext(), mFavOffToastMsg, Toast.LENGTH_LONG).show();
+                            mMovieFavoriteImageView.setBackgroundResource(R.drawable.ic_favorite_border_red_24dp);
+                        }
+                    });
+
+                } else {
+                    mDb.movieDAO().insertMovie(mMovie);
+                    handler.post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(getActivity().getBaseContext(), mFavOnToastMsg, Toast.LENGTH_LONG).show();
+                            mMovieFavoriteImageView.setBackgroundResource(R.drawable.ic_favorite_red_24dp);
+                        }
+                    });
+
+                }
+            }
+        });
+
     }
 
     /**
