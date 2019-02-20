@@ -1,9 +1,12 @@
 package com.popmovies.hridley.popularmovies.fragments;
 
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -89,18 +92,6 @@ public class MovieGridFragment extends Fragment implements
     private static final String BUNDLE_PAGE_KEY = "currentPage";
     private static final String BUNDLE_SORTING_KEY = "currentSorting";
     private static final String BUNDLE_ERROR_KEY = "errorShown";
-
-    private static final int ID_FAVORITES_LOADER = 33;
-
-    public static final String[] FAVORITE_MOVIES_PROJECTION = {
-            FavoriteMovieEntry.MOVIE_ID,
-            FavoriteMovieEntry.BACKDROP_PATH,
-            FavoriteMovieEntry.POSTER_PATH,
-            FavoriteMovieEntry.OVERVIEW,
-            FavoriteMovieEntry.TITLE,
-            FavoriteMovieEntry.RELEASE_DATE,
-            FavoriteMovieEntry.VOTE_AVERAGE,
-    };
 
     @Nullable
     @Override
@@ -226,27 +217,7 @@ public class MovieGridFragment extends Fragment implements
                     );
                     break;
                 case SORTING_FAVORITES:
-
-                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                List<Movie> movieList = mDb.movieDAO().loadAllMovies();
-                                //logic from load fav movies
-                                mLoadingIndicator.setVisibility(View.INVISIBLE);
-                                if (null != movieList) {
-                                    mMoviesAdapter.setMoviesData(movieList);
-                                    mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-                                } else {
-                                    showErrorMessage(R.string.error_moviedb_list, mContext);
-                                }
-                                mSwipeContainer.setRefreshing(false);
-                                // end logic
-                            } catch (NullPointerException e) {
-                                Toast.makeText(getActivity().getBaseContext(), "No Favorites", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
+                   loadFavoritesFromDb();
                     break;
             }
         } else {
@@ -254,15 +225,29 @@ public class MovieGridFragment extends Fragment implements
         }
     }
 
-    public void loadFavoritesFromDb(List<Movie> movieList) {
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
-        if (null != movieList) {
-            mMoviesAdapter.setMoviesData(movieList);
-            mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-        } else {
-            showErrorMessage(R.string.error_moviedb_list, mContext);
+    public void loadFavoritesFromDb() {
+        Log.d("LOADING FAVORITES", "LOADING FAVORITES");
+        try {
+            final LiveData<List<Movie>> movieList = mDb.movieDAO().loadAllMovies();
+            movieList.observe(this, new Observer<List<Movie>>() {
+                @Override
+                public void onChanged(@Nullable List<Movie> movies) {
+                    //logic from load fav movies
+                    mLoadingIndicator.setVisibility(View.INVISIBLE);
+                    if (null != movies) {
+                        mMoviesAdapter.setMoviesData(movies);
+                        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+                    } else {
+                        showErrorMessage(R.string.error_moviedb_list, mContext);
+                    }
+                    mSwipeContainer.setRefreshing(false);
+                    // end logic
+                }
+            });
+
+        } catch (NullPointerException e) {
+            Toast.makeText(getActivity().getBaseContext(), "No Favorites", Toast.LENGTH_LONG).show();
         }
-        mSwipeContainer.setRefreshing(false);
     }
 
     /**
@@ -277,7 +262,7 @@ public class MovieGridFragment extends Fragment implements
                 mMoviesAdapter.clearMovieList();
                 break;
             case SORTING_FAVORITES:
-                mMoviesAdapter.loadCursorIntoAdapter(null);
+                mMoviesAdapter.clearMovieList();
         }
     }
 

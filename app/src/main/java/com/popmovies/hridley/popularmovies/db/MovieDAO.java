@@ -1,6 +1,7 @@
 package com.popmovies.hridley.popularmovies.db;
 
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -13,7 +14,7 @@ import java.util.List;
 @Dao
 public interface MovieDAO {
     @Query("SELECT * FROM Movie")
-   List<Movie> loadAllMovies();
+    LiveData<List<Movie>> loadAllMovies();
 
     @Insert
     void insertMovie(Movie movie);
