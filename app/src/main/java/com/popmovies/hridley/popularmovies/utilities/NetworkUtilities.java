@@ -32,7 +32,11 @@ public final class NetworkUtilities {
         ConnectivityManager cm =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo.isConnected();
+        if (null != netInfo) {
+            return netInfo.isConnected();
+        } else {
+            return false;
+        }
     }
 
     public static URL buildUrl(String method, Map<String, String> params) {
@@ -69,15 +73,16 @@ public final class NetworkUtilities {
             urlConnection.disconnect();
         }
     }
-    
-    
+
 
     /**
      * Getter method to get the Language query param value
      *
      * @return the Language query param value
      */
-    public static String getLanguage() { return LANGUAGE_QUERY_PARAM; }
+    public static String getLanguage() {
+        return LANGUAGE_QUERY_PARAM;
+    }
 
     /**
      * Getter method to get the Page query param value
